@@ -2,6 +2,7 @@
   "name": "Smart Crop Advisory System working version",
   "description": "A progressive web application that provides AI-powered, real-time farming guidance to Indian farmers, helping them improve crop yields and reduce costs.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone"
   ]
 }

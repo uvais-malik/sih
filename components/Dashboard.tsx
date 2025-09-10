@@ -27,10 +27,10 @@ const Header: React.FC = () => {
     );
 };
 
-const WeatherWidget: React.FC = () => {
+const WeatherWidget: React.FC<{onNavigate: () => void}> = ({onNavigate}) => {
     const { t } = useAppContext();
     return (
-      <div className="glass-card shadow-glass rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-yellow-100/30 via-transparent to-blue-100/30 dark:from-yellow-500/10 dark:to-blue-500/10">
+      <div onClick={onNavigate} className="glass-card shadow-glass rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-yellow-100/30 via-transparent to-blue-100/30 dark:from-yellow-500/10 dark:to-blue-500/10 cursor-pointer">
         <div className="flex justify-between items-start text-gray-700 dark:text-gray-300">
             <div>
                 <p className="body-large text-gray-500 dark:text-gray-400 text-sm">{t('location')}</p>
@@ -152,12 +152,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   return (
     <div className="p-4 sm:p-6 space-y-6">
       <Header />
-      <WeatherWidget />
+      <WeatherWidget onNavigate={() => onNavigate(View.Weather)} />
       <div className="grid grid-cols-2 gap-4">
-        <QuickActionCard icon="📸" title={t('disease_detection')} subtitle={t('disease_detection_subtitle')} gradient="bg-gradient-to-br from-red-200 to-pink-200 dark:from-red-800/50 dark:to-pink-800/50" onClick={() => onNavigate(View.DiseaseDetection)}/>
-        <QuickActionCard icon="🎤" title={t('voice_assistant')} subtitle={t('voice_assistant_subtitle')} gradient="bg-gradient-to-br from-blue-200 to-indigo-200 dark:from-blue-800/50 dark:to-indigo-800/50" animation="animate-pulse" onClick={() => {}}/>
-        <QuickActionCard icon="📈" title={t('market_prices')} subtitle={t('market_prices_subtitle')} gradient="bg-gradient-to-br from-green-200 to-emerald-200 dark:from-green-800/50 dark:to-emerald-800/50" onClick={() => {}}/>
-        <QuickActionCard icon="📅" title={t('farm_calendar')} subtitle={t('farm_calendar_subtitle')} gradient="bg-gradient-to-br from-purple-200 to-pink-200 dark:from-purple-800/50 dark:to-pink-800/50" onClick={() => {}}/>
+        <QuickActionCard icon="🔬" title={t('disease_detection')} subtitle={t('disease_detection_subtitle')} gradient="bg-gradient-to-br from-red-200 to-pink-200 dark:from-red-800/50 dark:to-pink-800/50" onClick={() => onNavigate(View.DiseaseDetection)}/>
+        <QuickActionCard icon="🎤" title={t('voice_assistant')} subtitle={t('voice_assistant_subtitle')} gradient="bg-gradient-to-br from-blue-200 to-indigo-200 dark:from-blue-800/50 dark:to-indigo-800/50" animation="animate-pulse" onClick={() => onNavigate(View.VoiceAssistant)}/>
+        <QuickActionCard icon="📈" title={t('market_prices')} subtitle={t('market_prices_subtitle')} gradient="bg-gradient-to-br from-green-200 to-emerald-200 dark:from-green-800/50 dark:to-emerald-800/50" onClick={() => onNavigate(View.MarketPrices)}/>
+        <QuickActionCard icon="📅" title={t('farm_calendar')} subtitle={t('farm_calendar_subtitle')} gradient="bg-gradient-to-br from-purple-200 to-pink-200 dark:from-purple-800/50 dark:to-pink-800/50" onClick={() => onNavigate(View.CropCalendar)}/>
       </div>
       <CropStatus />
     </div>

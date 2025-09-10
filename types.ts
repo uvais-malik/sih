@@ -1,6 +1,10 @@
 export enum View {
   Dashboard,
   DiseaseDetection,
+  VoiceAssistant,
+  CropCalendar,
+  MarketPrices,
+  Weather,
   Profile,
 }
 

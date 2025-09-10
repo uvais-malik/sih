@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AuthView } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 
@@ -8,6 +8,43 @@ interface AuthChoiceScreenProps {
 
 const AuthChoiceScreen: React.FC<AuthChoiceScreenProps> = ({ onNavigate }) => {
     const { t, loginAsGuest } = useAppContext();
+    const [view, setView] = useState<'choice' | 'guestName'>('choice');
+    const [guestName, setGuestName] = useState('');
+
+    const handleGuestContinue = (e: React.FormEvent) => {
+        e.preventDefault();
+        loginAsGuest(guestName);
+    };
+
+    if (view === 'guestName') {
+        return (
+            <div className="auth-container p-4 flex flex-col justify-center items-center">
+                <div className="auth-card w-full max-w-sm dark:bg-gray-800/50 animate-fade-in">
+                     <button onClick={() => setView('choice')} className="text-primary dark:text-green-300 mb-4 flex items-center gap-2 hover:underline">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                        Back
+                     </button>
+                    <h1 className="display-large text-2xl sm:text-3xl text-center mb-6">{t('enter_as_guest')}</h1>
+                    <form onSubmit={handleGuestContinue}>
+                        <div className="form-field">
+                            <label htmlFor="guestName">{t('your_guest_name')}</label>
+                            <input
+                                id="guestName"
+                                type="text"
+                                value={guestName}
+                                onChange={(e) => setGuestName(e.target.value)}
+                                placeholder="e.g. Alex"
+                                autoFocus
+                            />
+                        </div>
+                        <button type="submit" className="morphic-button w-full mt-4 text-white font-bold py-3 px-4 rounded-xl shadow-lg">
+                            {t('continue_btn')}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
 
     const ChoiceCard: React.FC<{
         icon: string;
@@ -60,7 +97,7 @@ const AuthChoiceScreen: React.FC<AuthChoiceScreenProps> = ({ onNavigate }) => {
             </div>
             <div className="mt-8 text-center">
                 <button 
-                    onClick={loginAsGuest} 
+                    onClick={() => setView('guestName')} 
                     className="body-large text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-green-300 underline transition-colors"
                 >
                     {t('continue_as_guest')}

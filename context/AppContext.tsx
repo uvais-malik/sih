@@ -16,7 +16,7 @@ interface AppContextType {
   login: (phone: string, password: string) => Promise<User>;
   logout: () => void;
   register: (userData: Omit<User, 'id' | 'isVerified' | 'createdAt'>) => Promise<User>;
-  loginAsGuest: () => void;
+  loginAsGuest: (name?: string) => void;
 }
 
 const translations: Record<string, Record<Language, string>> = {
@@ -72,6 +72,9 @@ const translations: Record<string, Record<Language, string>> = {
   signup_success_message: { hi: "आपकी खेती की यात्रा अब शुरू होती है", en: "Your farming journey starts now" },
   view_dashboard: { hi: "डैशबोर्ड देखें", en: "View Dashboard" },
   continue_as_guest: { hi: "या, मेहमान के रूप में जारी रखें", en: "Or, continue as a guest" },
+  enter_as_guest: { hi: "अतिथि के रूप में प्रवेश करें", en: "Enter as Guest" },
+  your_guest_name: { hi: "आपका नाम", en: "Your Name" },
+  continue_btn: { hi: "जारी रखें", en: "Continue" },
 
   // --- Dashboard ---
   greeting: { hi: "🙏 नमस्कार", en: "🙏 Hello" },
@@ -84,13 +87,9 @@ const translations: Record<string, Record<Language, string>> = {
   wind_label: { hi: "हवा", en: "Wind" },
   ai_suggestion_title: { hi: "AI सुझाव", en: "AI Suggestion" },
   ai_suggestion_text: { hi: "💧 आज शाम 6-7 बजे के बीच सिंचाई करना उपयुक्त रहेगा।", en: "💧 It is suitable to irrigate today between 6-7 PM." },
-  disease_detection: { hi: "रोग पहचान", en: "Disease Detection" },
   disease_detection_subtitle: { hi: "फोटो खींचकर जांचें", en: "Check by taking a photo" },
-  voice_assistant: { hi: "आवाज़ में पूछें", en: "Ask with Voice" },
   voice_assistant_subtitle: { hi: "बोलकर सलाह लें", en: "Get advice by speaking" },
-  market_prices: { hi: "बाज़ार भाव", en: "Market Prices" },
   market_prices_subtitle: { hi: "ताज़ा दरें देखें", en: "See latest rates" },
-  farm_calendar: { hi: "खेती कैलेंडर", en: "Farm Calendar" },
   farm_calendar_subtitle: { hi: "आज के काम", en: "Today's tasks" },
   current_crop_status: { hi: "वर्तमान फसल स्थिति", en: "Current Crop Status" },
   crop_name: { hi: "गेहूं", en: "Wheat" },
@@ -106,6 +105,11 @@ const translations: Record<string, Record<Language, string>> = {
   
   // --- Bottom Nav ---
   dashboard: { hi: "डैशबोर्ड", en: "Dashboard" },
+  disease_detection: { hi: "रोग पहचान", en: "Disease" },
+  voice_assistant: { hi: "सहायक", en: "Assistant" },
+  crop_calendar: { hi: "कैलेंडर", en: "Calendar" },
+  market_prices: { hi: "बाज़ार", en: "Market" },
+  weather: { hi: "मौसम", en: "Weather" },
   profile: { hi: "प्रोफ़ाइल", en: "Profile" },
 
   // --- Profile Page ---
@@ -158,10 +162,52 @@ const translations: Record<string, Record<Language, string>> = {
   no_history_found_desc: { hi: "जब आप किसी विश्लेषण को सहेजते हैं, तो वह यहां दिखाई देगा।", en: "When you save an analysis, it will appear here." },
   save_history_prompt: { hi: "अपना विश्लेषण इतिहास सहेजने के लिए कृपया एक खाता बनाएं।", en: "To save your analysis history, please create an account."},
   
-  // --- Voice Assistant Modal ---
-  ai_response: { hi: "🤖 AI का जवाब:", en: "🤖 AI's Response:" },
+  // --- Voice Assistant Page ---
+  voice_assistant_title: { hi: "🎤 AI आवाज़ सहायक", en: "🎤 AI Voice Assistant" },
+  voice_assistant_page_subtitle: { hi: "बोलकर अपनी खेती के सवाल पूछें", en: "Ask your farming questions by speaking" },
+  voice_welcome_message: { hi: "नमस्ते! मैं आपका खेती सहायक हूँ। आप मौसम, बाज़ार भाव, या फसल की जानकारी के बारे में पूछ सकते हैं।", en: "Hello! I am your farming assistant. You can ask about weather, market prices, or crop information." },
   listening: { hi: "सुन रहा है...", en: "Listening..." },
-  tap_to_ask: { hi: "पूछने के लिए टैप करें", en: "Tap to ask" },
+  processing: { hi: "सोच रहा है...", en: "Processing..." },
+  tap_to_speak: { hi: "बोलने के लिए टैप करें", en: "Tap to Speak" },
+  speak_now: { hi: "अब बोलें...", en: "Speak now..." },
+  quick_queries: { hi: "त्वरित प्रश्न:", en: "Quick Queries:" },
+  ask_weather: { hi: "आज का मौसम", en: "Today's weather" },
+  ask_market_price: { hi: "गेहूं का भाव", en: "Wheat price" },
+  ask_crop_info: { hi: "गन्ने में पानी कब दें", en: "When to water sugarcane" },
+  
+  // --- Market Prices Page ---
+  market_prices_title: { hi: "📈 आज के बाज़ार भाव", en: "📈 Today's Market Prices" },
+  market_prices_page_subtitle: { hi: "प्रमुख मंडियों से वास्तविक समय की कीमतें", en: "Real-time prices from major mandis" },
+  last_updated: { hi: "आखिरी अपडेट:", en: "Last Updated:" },
+  quintal: { hi: "क्विंटल", en: "quintal" },
+  price_details: { hi: "मूल्य विवरण", en: "Price Details" },
+  seven_day_trend: { hi: "7-दिन का ट्रेंड", en: "7-Day Trend" },
+  market_info: { hi: "बाजार की जानकारी", en: "Market Information" },
+  market_volume: { hi: "बाजार मात्रा", en: "Market Volume" },
+  quality_grade: { hi: "गुणवत्ता ग्रेड", en: "Quality Grade" },
+  ai_selling_advice: { hi: "AI बेचने की सलाह", en: "AI Selling Advice" },
+  selling_advice_text: { hi: "कीमतें बढ़ रही हैं। अगले 2-3 दिनों में बेचना फायदेमंद हो सकता है।", en: "Prices are trending up. Selling in the next 2-3 days could be profitable." },
+  
+  // --- Crop Calendar Page ---
+  crop_calendar_title: { hi: "📅 फसल कैलेंडर", en: "📅 Crop Calendar" },
+  crop_calendar_page_subtitle: { hi: "आपकी फसलों के लिए मौसमी गाइड", en: "Seasonal guide for your crops" },
+  todays_tasks: { hi: "आज के कार्य", en: "Today's Tasks" },
+  high_priority: { hi: "उच्च प्राथमिकता", en: "High Priority" },
+  medium_priority: { hi: "मध्यम प्राथमिकता", en: "Medium Priority" },
+  low_priority: { hi: "कम प्राथमिकता", en: "Low Priority" },
+  completed: { hi: "पूर्ण", en: "Completed" },
+
+  // --- Weather Page ---
+  weather_page_title: { hi: "🌤️ मौसम पूर्वानुमान", en: "🌤️ Weather Forecast" },
+  weather_page_subtitle: { hi: "अपने खेत के लिए विस्तृत मौसम की जानकारी", en: "Detailed weather information for your farm" },
+  feels_like: { hi: "जैसा महसूस होता है", en: "Feels like" },
+  pressure: { hi: "दबाव", en: "Pressure" },
+  visibility: { hi: "दृश्यता", en: "Visibility" },
+  uv_index: { hi: "यूवी इंडेक्स", en: "UV Index" },
+  hourly_forecast: { hi: "घंटे का पूर्वानुमान", en: "Hourly Forecast" },
+  seven_day_forecast: { hi: "7-दिन का पूर्वानुमान", en: "7-Day Forecast" },
+  farming_advice: { hi: "खेती की सलाह", en: "Farming Advice" },
+  weather_advice_text: { hi: "शाम को सिंचाई के लिए अच्छा दिन है। कल बारिश की संभावना है, इसलिए आज कीटनाशक का छिड़काव न करें।", en: "Good day for evening irrigation. Rain is expected tomorrow, so avoid pesticide spraying today." },
 };
 
 
@@ -227,10 +273,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return newUser;
   };
 
-  const loginAsGuest = () => {
+  const loginAsGuest = (name?: string) => {
+    const guestName = name && name.trim().length > 0 ? name.trim() : 'User';
     const guestUser: User = {
       id: 'guest_user',
-      name: 'User',
+      name: guestName,
       phone: '',
       location: {
         state: 'Maharashtra',
