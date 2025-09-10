@@ -80,6 +80,18 @@ const Toggle: React.FC<{label: string; enabled: boolean; onChange?: () => void;}
 const UserProfile: React.FC = () => {
     const { theme, setTheme, language, setLanguage, t, user, logout } = useAppContext();
 
+    const handleLanguageChange = () => {
+        if (language === 'en') setLanguage('hi');
+        else if (language === 'hi') setLanguage('pa');
+        else setLanguage('en');
+    };
+
+    const languageName = () => {
+        if (language === 'hi') return 'हिंदी';
+        if (language === 'pa') return 'ਪੰਜਾਬੀ';
+        return 'English';
+    }
+
     return (
         <div className="p-4 sm:p-6 space-y-6">
             {user?.isGuest && <GuestBanner />}
@@ -87,7 +99,7 @@ const UserProfile: React.FC = () => {
             <InfoCard title={t('personal_info')} icon="👤">
                 <InfoField label={t('name_label')} value={user?.name} />
                 <InfoField label={t('phone_label')} value={user?.isGuest ? 'N/A' : user?.phone} />
-                <InfoField label={t('language_label')} value={language === 'hi' ? 'हिंदी' : 'English'} />
+                <InfoField label={t('language_label')} value={languageName()} />
                 <InfoField label={t('location_label')} value={`${user?.location.village || ''}, ${user?.location.district}, ${user?.location.state}`} />
             </InfoCard>
              <InfoCard title={t('farm_info')} icon="🌾">
@@ -101,7 +113,12 @@ const UserProfile: React.FC = () => {
             </InfoCard>
              <InfoCard title={t('settings')} icon="⚙️">
                 <div className="col-span-1 sm:col-span-2 grid grid-cols-1 gap-2">
-                  <Toggle label={t('language_toggle')} enabled={language === 'en'} onChange={() => setLanguage(language === 'en' ? 'hi' : 'en')} />
+                  <div className="flex justify-between items-center p-2 rounded-lg transition-colors sm:col-span-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" onClick={handleLanguageChange}>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">{t('language_toggle')}</p>
+                    <div className="bg-gray-200 dark:bg-gray-600 rounded-full px-3 py-1 font-semibold text-gray-700 dark:text-gray-200">
+                        {languageName()}
+                    </div>
+                  </div>
                   <Toggle label={t('dark_mode_toggle')} enabled={theme === 'dark'} onChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
                   <Toggle label={t('notifications_toggle')} enabled={true} />
                   <Toggle label={t('voice_assistance_toggle')} enabled={true} />

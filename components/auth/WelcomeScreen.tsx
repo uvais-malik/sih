@@ -8,7 +8,19 @@ interface WelcomeScreenProps {
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
   const { t, language, setLanguage } = useAppContext();
+
+  const handleLanguageChange = () => {
+    if (language === 'en') setLanguage('hi');
+    else if (language === 'hi') setLanguage('pa');
+    else setLanguage('en');
+  };
   
+  const getNextLanguageName = () => {
+    if (language === 'en') return 'हिंदी';
+    if (language === 'hi') return 'ਪੰਜਾਬੀ';
+    return 'English';
+  };
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-[#1B5E20] to-[#8BC34A] flex flex-col justify-between p-6 sm:p-8 text-white relative overflow-hidden">
         {/* Floating Icons */}
@@ -22,10 +34,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
 
         <div className="z-10 text-right">
             <button 
-              onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+              onClick={handleLanguageChange}
               className="bg-black/20 backdrop-blur-sm rounded-full px-4 py-2 text-sm"
             >
-              🌐 {language === 'en' ? 'हिंदी' : 'English'}
+              🌐 {getNextLanguageName()}
             </button>
         </div>
 

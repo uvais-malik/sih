@@ -36,30 +36,32 @@ const VoiceAssistant: React.FC = () => {
 
     const getMockAIResponse = useCallback((query: string) => {
         const lowerQuery = query.toLowerCase();
-        if (lowerQuery.includes('weather') || lowerQuery.includes('मौसम')) {
-            return t('language') === 'hi'
-                ? "आज का मौसम साफ है और तापमान 32 डिग्री सेल्सियस है। सिंचाई के लिए यह एक अच्छा दिन है।"
-                : "Today's weather is clear with a temperature of 32°C. It's a good day for irrigation.";
+        if (lowerQuery.includes('weather') || lowerQuery.includes('मौसम') || lowerQuery.includes('ਮੌਸਮ')) {
+            if (language === 'hi') return "आज का मौसम साफ है और तापमान 32 डिग्री सेल्सियस है। सिंचाई के लिए यह एक अच्छा दिन है।";
+            if (language === 'pa') return "ਅੱਜ ਮੌਸਮ ਸਾਫ਼ ਹੈ ਅਤੇ ਤਾਪਮਾਨ 32 ਡਿਗਰੀ ਸੈਲਸੀਅਸ ਹੈ। ਸਿੰਚਾਈ ਲਈ ਇਹ ਇੱਕ ਚੰਗਾ ਦਿਨ ਹੈ।";
+            return "Today's weather is clear with a temperature of 32°C. It's a good day for irrigation.";
         }
-        if (lowerQuery.includes('price') || lowerQuery.includes('भाव') || lowerQuery.includes('गेहूं')) {
-            return t('language') === 'hi'
-                ? "गेहूं का भाव अभी ₹2,150 प्रति क्विंटल चल रहा है, जो कल से 5% ज़्यादा है।"
-                : "The current market price for wheat is ₹2,150 per quintal, which is up 5% from yesterday.";
+        if (lowerQuery.includes('price') || lowerQuery.includes('भाव') || lowerQuery.includes('ਭਾਅ') || lowerQuery.includes('गेहूं') || lowerQuery.includes('ਕਣਕ')) {
+             if (language === 'hi') return "गेहूं का भाव अभी ₹2,150 प्रति क्विंटल चल रहा है, जो कल से 5% ज़्यादा है।";
+             if (language === 'pa') return "ਕਣਕ ਦਾ ਭਾਅ ਇਸ ਵੇਲੇ ₹2,150 ਪ੍ਰਤੀ ਕੁਇੰਟਲ ਹੈ, ਜੋ ਕੱਲ੍ਹ ਨਾਲੋਂ 5% ਵੱਧ ਹੈ।";
+             return "The current market price for wheat is ₹2,150 per quintal, which is up 5% from yesterday.";
         }
-        if (lowerQuery.includes('water') || lowerQuery.includes('पानी') || lowerQuery.includes('सिंचाई')) {
-            return t('language') === 'hi'
-                ? "गन्ने की फसल को हर 10-15 दिनों में गहरी सिंचाई की आवश्यकता होती है, खासकर गर्मी के महीनों में।"
-                : "Sugarcane crops require deep watering every 10-15 days, especially during hot months.";
+        if (lowerQuery.includes('water') || lowerQuery.includes('पानी') || lowerQuery.includes('ਪਾਣੀ') || lowerQuery.includes('सिंचाई')) {
+            if (language === 'hi') return "गन्ने की फसल को हर 10-15 दिनों में गहरी सिंचाई की आवश्यकता होती है, खासकर गर्मी के महीनों में।";
+            if (language === 'pa') return "ਗੰਨੇ ਦੀ ਫਸਲ ਨੂੰ ਹਰ 10-15 ਦਿਨਾਂ ਵਿੱਚ ਡੂੰਘੀ ਸਿੰਚਾਈ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ, ਖਾਸ ਕਰਕੇ ਗਰਮੀਆਂ ਦੇ ਮਹੀਨਿਆਂ ਵਿੱਚ।";
+            return "Sugarcane crops require deep watering every 10-15 days, especially during hot months.";
         }
-        return t('language') === 'hi'
-            ? "माफ़ कीजिए, मुझे समझ नहीं आया। क्या आप अपना सवाल दोहरा सकते हैं?"
-            : "I'm sorry, I didn't understand that. Could you please repeat your question?";
+        if (language === 'hi') return "माफ़ कीजिए, मुझे समझ नहीं आया। क्या आप अपना सवाल दोहरा सकते हैं?";
+        if (language === 'pa') return "ਮਾਫ ਕਰਨਾ, ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਇਆ। ਕੀ ਤੁਸੀਂ ਆਪਣਾ ਸਵਾਲ ਦੁਹਰਾ ਸਕਦੇ ਹੋ?";
+        return "I'm sorry, I didn't understand that. Could you please repeat your question?";
 
-    }, [t, language]);
+    }, [language]);
 
     const speak = (text: string) => {
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+        if (language === 'hi') utterance.lang = 'hi-IN';
+        else if (language === 'pa') utterance.lang = 'pa-IN';
+        else utterance.lang = 'en-US';
         window.speechSynthesis.speak(utterance);
     }
 
@@ -87,7 +89,7 @@ const VoiceAssistant: React.FC = () => {
             setIsProcessing(false);
             speak(aiResponseText);
         }, 1500);
-    }, [getMockAIResponse]);
+    }, [getMockAIResponse, speak]);
     
 
     const startListening = () => {
@@ -98,7 +100,10 @@ const VoiceAssistant: React.FC = () => {
                 return;
             }
             recognitionRef.current = new SpeechRecognition();
-            recognitionRef.current.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+            if (language === 'hi') recognitionRef.current.lang = 'hi-IN';
+            else if (language === 'pa') recognitionRef.current.lang = 'pa-IN';
+            else recognitionRef.current.lang = 'en-US';
+
             recognitionRef.current.interimResults = true;
             recognitionRef.current.continuous = false;
             
