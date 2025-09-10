@@ -8,11 +8,13 @@ interface DashboardProps {
 }
 
 const Header: React.FC = () => {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
+    const firstName = user?.name?.split(' ')[0] || 'Farmer';
+
     return (
       <div className="glass-card shadow-glass p-6 rounded-3xl flex justify-between items-center">
         <div>
-          <h1 className="display-large text-3xl sm:text-4xl">{t('greeting')}</h1>
+          <h1 className="display-large text-3xl sm:text-4xl">{t('greeting')}, {firstName}!</h1>
           <p className="body-large text-gray-600 dark:text-gray-300 mt-1">{t('greeting_subtitle')}</p>
         </div>
         <div className="relative">

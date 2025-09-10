@@ -1,4 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
+import type { User } from '../types';
+import AuthService from '../services/authService';
 
 type Theme = 'light' | 'dark';
 type Language = 'hi' | 'en';
@@ -9,11 +11,68 @@ interface AppContextType {
   language: Language;
   setLanguage: (language: Language) => void;
   t: (key: string) => string;
+  user: User | null;
+  isLoading: boolean;
+  login: (phone: string, password: string) => Promise<User>;
+  logout: () => void;
+  register: (userData: Omit<User, 'id' | 'isVerified' | 'createdAt'>) => Promise<User>;
 }
 
 const translations: Record<string, Record<Language, string>> = {
+  // --- Auth Flow ---
+  welcome_title: { hi: "🙏 नमस्कार!", en: "🙏 Welcome!" },
+  welcome_subtitle: { hi: "खेती में आधुनिक तकनीक का स्वागत है", en: "Welcome to modern technology in farming" },
+  welcome_description: { hi: "फसल की देखभाल, रोग पहचान, और बाज़ार की जानकारी एक ही जगह", en: "Crop care, disease detection, and market information in one place" },
+  get_started: { hi: "शुरू करें", en: "Get Started" },
+  already_have_account: { hi: "पहले से खाता है?", en: "Already have an account?" },
+  login_prompt: { hi: "लॉगिन करें", en: "Login" },
+  your_account: { hi: "अपना खाता", en: "Your Account" },
+  secure_farm_info: { hi: "खेती की जानकारी को सुरक्षित रखने के लिए", en: "To keep your farm information secure" },
+  create_new_account: { hi: "नया खाता बनाएं", en: "Create New Account" },
+  first_time_user: { hi: "पहली बार इस्तेमाल कर रहे हैं?", en: "Using for the first time?" },
+  get_personalized_advice: { hi: "✅ व्यक्तिगत सलाह पाएं", en: "✅ Get personalized advice" },
+  track_your_crops: { hi: "✅ अपनी फसल ट्रैक करें", en: "✅ Track your crops" },
+  connect_with_experts: { hi: "✅ विशेषज्ञों से जुड़ें", en: "✅ Connect with experts" },
+  create_account_btn: { hi: "खाता बनाएं", en: "Create Account" },
+  existing_user: { hi: "पहले से खाता है?", en: "Already have an account?" },
+  quick_dashboard_access: { hi: "⚡ तुरंत डैशबोर्ड देखें", en: "⚡ Instant dashboard access" },
+  view_your_data: { hi: "📊 अपना डेटा देखें", en: "📊 View your data" },
+  continue_where_left: { hi: "🔄 जहाँ छोड़ा था, वहीं से शुरू करें", en: "🔄 Continue where you left off" },
+  login_title: { hi: "🔐 लॉगिन करें", en: "🔐 Login" },
+  login_subtitle: { hi: "अपने खेत की जानकारी देखने के लिए", en: "To see your farm information" },
+  phone_number: { hi: "📱 मोबाइल नंबर *", en: "📱 Mobile Number *" },
+  password: { hi: "🔒 पासवर्ड *", en: "🔒 Password *" },
+  enter_your_password: { hi: "अपना पासवर्ड डालें", en: "Enter your password" },
+  remember_me: { hi: "मुझे याद रखें", en: "Remember me" },
+  forgot_password: { hi: "पासवर्ड भूल गए?", en: "Forgot password?" },
+  new_user_prompt: { hi: "नया यूजर हैं?", en: "New user?" },
+  signup_step_1: { hi: "चरण 1 का 3", en: "Step 1 of 3" },
+  signup_title_1: { hi: "👤 बुनियादी जानकारी", en: "👤 Basic Information" },
+  your_name: { hi: "🏷️ आपका नाम *", en: "🏷️ Your Name *" },
+  create_password: { hi: "🔒 नया पासवर्ड बनाएं *", en: "🔒 Create New Password *" },
+  confirm_password: { hi: "🔒 पासवर्ड दोहराएं *", en: "🔒 Confirm Password *" },
+  signup_step_2: { hi: "चरण 2 का 3", en: "Step 2 of 3" },
+  signup_title_2: { hi: "📍 स्थान की जानकारी", en: "📍 Location Information" },
+  select_state: { hi: "🏛️ राज्य चुनें *", en: "🏛️ Select State *" },
+  select_district: { hi: "🏘️ जिला चुनें *", en: "🏘️ Select District *" },
+  village_area: { hi: "🏠 गांव/क्षेत्र", en: "🏠 Village/Area" },
+  signup_step_3: { hi: "चरण 3 का 3", en: "Step 3 of 3" },
+  signup_title_3: { hi: "🌾 खेती की जानकारी", en: "🌾 Farm Information" },
+  land_size_acres: { hi: "📏 कुल जमीन (एकड़ में) *", en: "📏 Total Land (in Acres) *" },
+  primary_crops: { hi: "🌱 मुख्य फसलें *", en: "🌱 Primary Crops *" },
+  soil_type: { hi: "🏔️ मिट्टी का प्रकार", en: "🏔️ Soil Type" },
+  irrigation_method: { hi: "💧 सिंचाई का तरीका", en: "💧 Irrigation Method" },
+  farming_experience: { hi: "👨‍🌾 खेती का अनुभव", en: "👨‍🌾 Farming Experience" },
+  next_step: { hi: "अगला चरण", en: "Next Step" },
+  previous_step: { hi: "पिछला चरण", en: "Previous Step" },
+  finish_signup: { hi: "पंजीकरण पूरा करें", en: "Finish Registration" },
+  signup_success_title: { hi: "🎉 बधाई हो!", en: "🎉 Congratulations!" },
+  signup_success_subtitle: { hi: "आपका खाता तैयार है", en: "Your account is ready" },
+  signup_success_message: { hi: "आपकी खेती की यात्रा अब शुरू होती है", en: "Your farming journey starts now" },
+  view_dashboard: { hi: "डैशबोर्ड देखें", en: "View Dashboard" },
+
   // --- Dashboard ---
-  greeting: { hi: "🙏 नमस्कार, राजू जी!", en: "🙏 Hello, Raju!" },
+  greeting: { hi: "🙏 नमस्कार", en: "🙏 Hello" },
   greeting_subtitle: { hi: "आज आपके खेत का स्वास्थ्य देखते हैं", en: "Let's check your farm's health today" },
   location: { hi: "📍 पुणे, महाराष्ट्र", en: "📍 Pune, Maharashtra" },
   weather_title: { hi: "आज का मौसम", en: "Today's Weather" },
@@ -64,37 +123,24 @@ const translations: Record<string, Record<Language, string>> = {
   soil_type_label: { hi: "Soil Type", en: "Soil Type" },
   irrigation_label: { hi: "Irrigation", en: "Irrigation" },
   settings: { hi: "सेटिंग्स", en: "Settings" },
-  language_toggle: { hi: "अंग्रेजी भाषा", en: "English Language" },
+  language_toggle: { hi: "English Language", en: "हिंदी भाषा" },
   dark_mode_toggle: { hi: "डार्क मोड", en: "Dark Mode" },
   notifications_toggle: { hi: "सूचनाएं", en: "Notifications" },
   voice_assistance_toggle: { hi: "आवाज सहायता", en: "Voice Assistance" },
   edit_profile: { hi: "✏️ प्रोफाइल संपादित करें", en: "✏️ Edit Profile" },
-  user_name: { hi: "राजू पटेल", en: "Raju Patel" },
-  user_phone: { hi: "+91-9876543210", en: "+91-9876543210" },
-  user_language: { hi: "हिंदी", en: "English" },
-  user_location: { hi: "पुणे, महाराष्ट्र", en: "Pune, Maharashtra" },
-  user_land_size: { hi: "5 एकड़", en: "5 Acres" },
-  user_primary_crops: { hi: "गन्ना, प्याज", en: "Sugarcane, Onion" },
-  user_soil_type: { hi: "काली कपास मिट्टी", en: "Black Cotton Soil" },
-  user_irrigation: { hi: "ड्रिप सिंचाई", en: "Drip Irrigation" },
-  user_experience_value: { hi: "2 साल", en: "2 Years" },
-  user_land_value: { hi: "5 एकड़", en: "5 Acres" },
-  user_crops_value: { hi: "3 फसलें", en: "3 Crops" },
+  logout: { hi: "लॉग आउट", en: "Logout" },
+  user_land_unit: { hi: "एकड़", en: "Acres" },
   
   // --- Disease Detection ---
   disease_detection_title: { hi: "🔬 AI रोग पहचान", en: "🔬 AI Disease Detection" },
   disease_detection_page_subtitle: { hi: "पत्तियों की फोटो से तुरंत जांच", en: "Instant check from leaf photos" },
-  
-  // CameraView
   take_crop_photo: { hi: "फसल की फोटो खींचें", en: "Take a Crop Photo" },
   take_crop_photo_desc: { hi: "पत्ती की साफ तस्वीर लें ताकि AI सही जांच कर सके।", en: "Take a clear picture of the leaf for accurate AI analysis." },
   open_camera: { hi: "📸 कैमरा खोलें", en: "📸 Open Camera" },
   choose_from_gallery: { hi: "📁 गैलरी से चुनें", en: "📁 Choose from Gallery" },
-  analyzing: { hi: "जांच हो रही है...", en: "Analyzing..." },
+  analyzing: { hi: "जांच हो रही है", en: "Analyzing" },
   analyze_with_ai: { hi: "🤖 AI से जांच कराएं", en: "🤖 Analyze with AI" },
   take_another_photo: { hi: "🔄 दूसरी फोटो लें", en: "🔄 Take Another Photo" },
-
-  // AnalysisResults
   confidence_score: { hi: "आत्मविश्वास स्कोर", en: "Confidence Score" },
   symptoms: { hi: "लक्षण", en: "Symptoms" },
   treatment: { hi: "उपचार", en: "Treatment" },
@@ -102,8 +148,6 @@ const translations: Record<string, Record<Language, string>> = {
   save_to_history: { hi: "💾 इतिहास में सहेजें", en: "💾 Save to History" },
   view_history: { hi: "📜 इतिहास देखें", en: "📜 View History" },
   contact_expert: { hi: "📞 विशेषज्ञ से बात करें", en: "📞 Contact Expert" },
-
-  // AnalysisHistory
   analysis_history: { hi: "📜 विश्लेषण इतिहास", en: "📜 Analysis History" },
   no_history_found: { hi: "कोई सहेजा गया इतिहास नहीं मिला।", en: "No saved history found." },
   no_history_found_desc: { hi: "जब आप किसी विश्लेषण को सहेजते हैं, तो वह यहां दिखाई देगा।", en: "When you save an analysis, it will appear here." },
@@ -120,6 +164,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'light');
   const [language, setLanguageState] = useState<Language>(() => (localStorage.getItem('language') as Language) || 'hi');
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -132,6 +178,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.setItem('language', language);
     document.documentElement.lang = language;
   }, [language]);
+  
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        const storedUser = localStorage.getItem('cropAdvisor_user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error("Failed to parse user from localStorage", error);
+        localStorage.removeItem('cropAdvisor_user');
+      }
+      // Simulate initial load time
+      setTimeout(() => setIsLoading(false), 1000);
+    };
+    checkAuth();
+  }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -140,13 +203,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const setLanguage = (newLanguage: Language) => {
     setLanguageState(newLanguage);
   };
+  
+  const login = async (phone: string, password: string) => {
+    const loggedInUser = await AuthService.login(phone, password);
+    setUser(loggedInUser);
+    return loggedInUser;
+  };
+
+  const logout = () => {
+    AuthService.logout();
+    setUser(null);
+  };
+
+  const register = async (userData: Omit<User, 'id' | 'isVerified' | 'createdAt'>) => {
+      const newUser = await AuthService.register(userData);
+      setUser(newUser);
+      return newUser;
+  };
 
   const t = useCallback((key: string): string => {
     return translations[key]?.[language] || key;
   }, [language]);
 
   return (
-    <AppContext.Provider value={{ theme, setTheme, language, setLanguage, t }}>
+    <AppContext.Provider value={{ theme, setTheme, language, setLanguage, t, user, isLoading, login, logout, register }}>
       {children}
     </AppContext.Provider>
   );

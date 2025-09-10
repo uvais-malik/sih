@@ -1,13 +1,21 @@
 
 import React, { useState, useCallback } from 'react';
-import { View } from './types';
+import { View, AuthView } from './types';
 import Dashboard from './components/Dashboard';
 import DiseaseDetection from './components/disease/DiseaseDetection';
 import UserProfile from './components/profile/UserProfile';
 import VoiceAssistantModal from './components/voice/VoiceAssistantModal';
 import { useAppContext } from './context/AppContext';
 
-const App: React.FC = () => {
+// Auth Components
+import LoadingScreen from './components/auth/LoadingScreen';
+import WelcomeScreen from './components/auth/WelcomeScreen';
+import AuthChoiceScreen from './components/auth/AuthChoiceScreen';
+import LoginScreen from './components/auth/LoginScreen';
+import SignupScreen from './components/auth/SignupScreen';
+import SignupSuccessScreen from './components/auth/SignupSuccessScreen';
+
+const AuthenticatedApp: React.FC = () => {
   const [activeView, setActiveView] = useState<View>(View.Dashboard);
   const [isVoiceModalOpen, setVoiceModalOpen] = useState(false);
   const { t } = useAppContext();
@@ -50,7 +58,7 @@ const App: React.FC = () => {
     <button
       onClick={onClick}
       className={`flex flex-col items-center justify-center gap-1 w-full pt-2 pb-1 transition-all duration-300 ${
-        isActive ? 'text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-primary'
+        isActive ? 'text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-green-300'
       }`}
     >
       {icon}
@@ -79,6 +87,34 @@ const App: React.FC = () => {
       <VoiceAssistantModal isOpen={isVoiceModalOpen} onClose={() => setVoiceModalOpen(false)} />
     </div>
   );
+};
+
+const UnauthenticatedApp: React.FC = () => {
+    const [authView, setAuthView] = useState<AuthView>(AuthView.Welcome);
+
+    switch(authView) {
+        case AuthView.AuthChoice:
+            return <AuthChoiceScreen onNavigate={setAuthView} />;
+        case AuthView.Login:
+            return <LoginScreen onNavigate={setAuthView} />;
+        case AuthView.Signup:
+            return <SignupScreen onNavigate={setAuthView} />;
+        case AuthView.SignupSuccess:
+            return <SignupSuccessScreen onNavigate={setAuthView} />;
+        case AuthView.Welcome:
+        default:
+            return <WelcomeScreen onNavigate={setAuthView} />;
+    }
+};
+
+const App: React.FC = () => {
+    const { user, isLoading } = useAppContext();
+    
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
+    
+    return user ? <AuthenticatedApp /> : <UnauthenticatedApp />;
 };
 
 export default App;
