@@ -16,6 +16,7 @@ interface AppContextType {
   login: (phone: string, password: string) => Promise<User>;
   logout: () => void;
   register: (userData: Omit<User, 'id' | 'isVerified' | 'createdAt'>) => Promise<User>;
+  loginAsGuest: () => void;
 }
 
 const translations: Record<string, Record<Language, string>> = {
@@ -70,6 +71,7 @@ const translations: Record<string, Record<Language, string>> = {
   signup_success_subtitle: { hi: "आपका खाता तैयार है", en: "Your account is ready" },
   signup_success_message: { hi: "आपकी खेती की यात्रा अब शुरू होती है", en: "Your farming journey starts now" },
   view_dashboard: { hi: "डैशबोर्ड देखें", en: "View Dashboard" },
+  continue_as_guest: { hi: "या, मेहमान के रूप में जारी रखें", en: "Or, continue as a guest" },
 
   // --- Dashboard ---
   greeting: { hi: "🙏 नमस्कार", en: "🙏 Hello" },
@@ -130,6 +132,9 @@ const translations: Record<string, Record<Language, string>> = {
   edit_profile: { hi: "✏️ प्रोफाइल संपादित करें", en: "✏️ Edit Profile" },
   logout: { hi: "लॉग आउट", en: "Logout" },
   user_land_unit: { hi: "एकड़", en: "Acres" },
+  guest_mode_notice: { hi: "आप अतिथि मोड में ब्राउज़ कर रहे हैं। अपना डेटा सहेजने और व्यक्तिगत सलाह पाने के लिए साइन अप करें।", en: "You are browsing in guest mode. Sign up to save your data and get personalized advice." },
+  sign_up_now: { hi: "अभी साइन अप करें", en: "Sign Up Now" },
+  exit_guest_mode: { hi: "अतिथि मोड से बाहर निकलें", en: "Exit Guest Mode" },
   
   // --- Disease Detection ---
   disease_detection_title: { hi: "🔬 AI रोग पहचान", en: "🔬 AI Disease Detection" },
@@ -151,6 +156,7 @@ const translations: Record<string, Record<Language, string>> = {
   analysis_history: { hi: "📜 विश्लेषण इतिहास", en: "📜 Analysis History" },
   no_history_found: { hi: "कोई सहेजा गया इतिहास नहीं मिला।", en: "No saved history found." },
   no_history_found_desc: { hi: "जब आप किसी विश्लेषण को सहेजते हैं, तो वह यहां दिखाई देगा।", en: "When you save an analysis, it will appear here." },
+  save_history_prompt: { hi: "अपना विश्लेषण इतिहास सहेजने के लिए कृपया एक खाता बनाएं।", en: "To save your analysis history, please create an account."},
   
   // --- Voice Assistant Modal ---
   ai_response: { hi: "🤖 AI का जवाब:", en: "🤖 AI's Response:" },
@@ -221,12 +227,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return newUser;
   };
 
+  const loginAsGuest = () => {
+    const guestUser: User = {
+      id: 'guest_user',
+      name: 'User',
+      phone: '',
+      location: {
+        state: 'Maharashtra',
+        district: 'Pune',
+        village: 'Guestville',
+      },
+      farm: {
+        landSize: 5,
+        primaryCrops: ['Wheat', 'Sugarcane'],
+        soilType: 'Alluvial',
+        irrigationType: 'Drip',
+        farmingExperience: 'Intermediate (3-10 years)',
+      },
+      isVerified: false,
+      createdAt: new Date().toISOString(),
+      isGuest: true,
+    };
+    setUser(guestUser);
+  };
+
   const t = useCallback((key: string): string => {
     return translations[key]?.[language] || key;
   }, [language]);
 
   return (
-    <AppContext.Provider value={{ theme, setTheme, language, setLanguage, t, user, isLoading, login, logout, register }}>
+    <AppContext.Provider value={{ theme, setTheme, language, setLanguage, t, user, isLoading, login, logout, register, loginAsGuest }}>
       {children}
     </AppContext.Provider>
   );

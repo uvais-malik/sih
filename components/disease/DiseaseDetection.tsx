@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import CameraView from './CameraView';
 import AnalysisResults from './AnalysisResults';
 import AnalysisHistory from './AnalysisHistory';
 import type { DiseaseAnalysisResult, AnalysisHistoryEntry } from '../../types';
+import { useAppContext } from '../../context/AppContext';
 
 type View = 'camera' | 'results' | 'history';
 
@@ -12,6 +12,7 @@ const DiseaseDetection: React.FC = () => {
   const [analysisResult, setAnalysisResult] = useState<DiseaseAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user, t } = useAppContext();
 
   const handleAnalysisComplete = (result: DiseaseAnalysisResult) => {
     setAnalysisResult(result);
@@ -27,6 +28,12 @@ const DiseaseDetection: React.FC = () => {
   
   const handleSaveResult = () => {
     if (!analysisResult) return;
+
+    if (user?.isGuest) {
+      alert(t('save_history_prompt'));
+      return;
+    }
+
     try {
       const history: AnalysisHistoryEntry[] = JSON.parse(localStorage.getItem('diseaseHistory') || '[]');
       const newEntry: AnalysisHistoryEntry = {

@@ -1,6 +1,23 @@
 import React from 'react';
 import { useAppContext } from '../../context/AppContext';
 
+const GuestBanner: React.FC = () => {
+    const { t, logout } = useAppContext();
+    return (
+        <div className="bg-yellow-100 dark:bg-yellow-900/50 border border-yellow-300 dark:border-yellow-700/60 text-yellow-800 dark:text-yellow-200 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <p className="font-medium">
+                <span className="font-bold">📢 {t('guest_mode_notice')}</span>
+            </p>
+            <button 
+                onClick={logout} 
+                className="bg-primary text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition-colors flex-shrink-0"
+            >
+                {t('sign_up_now')}
+            </button>
+        </div>
+    );
+}
+
 const ProfileHeader: React.FC = () => {
     const { t, user } = useAppContext();
     return (
@@ -9,9 +26,11 @@ const ProfileHeader: React.FC = () => {
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-5xl shadow-lg mb-4">
                     👨‍🌾
                 </div>
-                <div className="absolute bottom-4 right-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center border-2 border-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
+                {!user?.isGuest && (
+                    <div className="absolute bottom-4 right-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center border-2 border-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                )}
             </div>
             <h1 className="display-large text-3xl">{user?.name || t('profile_greeting')}</h1>
             <p className="body-large text-gray-500 dark:text-gray-400 mt-1">{`📍 ${user?.location.district || ''}, ${user?.location.state || ''}`}</p>
@@ -63,10 +82,11 @@ const UserProfile: React.FC = () => {
 
     return (
         <div className="p-4 sm:p-6 space-y-6">
+            {user?.isGuest && <GuestBanner />}
             <ProfileHeader />
             <InfoCard title={t('personal_info')} icon="👤">
                 <InfoField label={t('name_label')} value={user?.name} />
-                <InfoField label={t('phone_label')} value={user?.phone} />
+                <InfoField label={t('phone_label')} value={user?.isGuest ? 'N/A' : user?.phone} />
                 <InfoField label={t('language_label')} value={language === 'hi' ? 'हिंदी' : 'English'} />
                 <InfoField label={t('location_label')} value={`${user?.location.village || ''}, ${user?.location.district}, ${user?.location.state}`} />
             </InfoCard>
@@ -88,11 +108,14 @@ const UserProfile: React.FC = () => {
                 </div>
             </InfoCard>
 
-             <button className="morphic-button w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2">
+             <button 
+                disabled={user?.isGuest}
+                className="morphic-button w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0"
+             >
                 {t('edit_profile')}
             </button>
              <button onClick={logout} className="w-full text-red-600 dark:text-red-400 font-semibold py-3 px-4 rounded-xl border-2 border-red-500/50 hover:bg-red-500/10 transition-colors">
-                {t('logout')}
+                {user?.isGuest ? t('exit_guest_mode') : t('logout')}
             </button>
         </div>
     );

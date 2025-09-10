@@ -32,6 +32,7 @@ export interface User {
   };
   isVerified: boolean;
   createdAt: string;
+  isGuest?: boolean;
 }
 
 

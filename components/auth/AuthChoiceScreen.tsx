@@ -7,7 +7,7 @@ interface AuthChoiceScreenProps {
 }
 
 const AuthChoiceScreen: React.FC<AuthChoiceScreenProps> = ({ onNavigate }) => {
-    const { t } = useAppContext();
+    const { t, loginAsGuest } = useAppContext();
 
     const ChoiceCard: React.FC<{
         icon: string;
@@ -57,6 +57,14 @@ const AuthChoiceScreen: React.FC<AuthChoiceScreenProps> = ({ onNavigate }) => {
                     buttonText={t('login_prompt')}
                     onClick={() => onNavigate(AuthView.Login)}
                  />
+            </div>
+            <div className="mt-8 text-center">
+                <button 
+                    onClick={loginAsGuest} 
+                    className="body-large text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-green-300 underline transition-colors"
+                >
+                    {t('continue_as_guest')}
+                </button>
             </div>
         </div>
     );
