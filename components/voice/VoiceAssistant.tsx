@@ -8,14 +8,21 @@ interface Message {
     timestamp: string;
 }
 
-// FIX: Defined the missing MicIcon component.
 const MicIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>;
+
+const SendIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5" {...props}>
+      <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.949a.75.75 0 00.725.562h8.384a.75.75 0 010 1.5H4.418L2.998 15.76a.75.75 0 00.95.826l14.05-5.269a.75.75 0 000-1.418L3.105 2.289z" />
+    </svg>
+);
+
 
 const VoiceAssistant: React.FC = () => {
     const { t, language } = useAppContext();
     const [messages, setMessages] = useState<Message[]>([]);
     const [isListening, setIsListening] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [textInput, setTextInput] = useState('');
     const recognitionRef = useRef<any>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +98,13 @@ const VoiceAssistant: React.FC = () => {
         }, 1500);
     }, [getMockAIResponse, speak]);
     
+     const handleTextSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (textInput.trim() && !isProcessing) {
+            processUserMessage(textInput.trim());
+            setTextInput('');
+        }
+    };
 
     const startListening = () => {
         try {
@@ -166,7 +180,7 @@ const VoiceAssistant: React.FC = () => {
     
     return (
         <div className="p-4 sm:p-6 h-[calc(100vh-6rem)] flex flex-col">
-            <div className="text-center mb-4">
+            <div className="text-center mb-4 flex-shrink-0">
                 <h1 className="headline-medium text-2xl dark:text-white">{t('voice_assistant_title')}</h1>
                 <p className="body-large text-gray-600 dark:text-gray-300 mt-1">{t('voice_assistant_page_subtitle')}</p>
             </div>
@@ -188,7 +202,7 @@ const VoiceAssistant: React.FC = () => {
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                 {!isListening && !isProcessing && (
                     <div className="mb-4 text-center animate-fade-in">
                         <p className="font-semibold text-sm mb-2">{t('quick_queries')}</p>
@@ -199,15 +213,37 @@ const VoiceAssistant: React.FC = () => {
                         </div>
                     </div>
                 )}
-                <div className="flex flex-col items-center">
-                    <button onClick={handleMicClick} disabled={isProcessing} className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-300 ${isListening ? 'bg-red-500' : 'bg-primary'} disabled:opacity-50`}>
-                        {isListening && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>}
-                        <MicIcon className="w-8 h-8 text-white"/>
+                <form onSubmit={handleTextSubmit} className="relative flex items-center">
+                    <input
+                        type="text"
+                        value={textInput}
+                        onChange={(e) => setTextInput(e.target.value)}
+                        placeholder={isListening ? t('speak_now') : "Type or tap the mic..."}
+                        disabled={isListening || isProcessing}
+                        autoComplete="off"
+                        aria-label="Ask the AI assistant a question"
+                        className="w-full pl-5 pr-16 py-3 text-base text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-full border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    />
+                    <button
+                        type={textInput.trim() ? 'submit' : 'button'}
+                        onClick={textInput.trim() ? undefined : handleMicClick}
+                        disabled={isProcessing}
+                        aria-label={textInput.trim() ? "Send message" : "Use voice input"}
+                        className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 transform
+                            ${isListening ? 'bg-red-500 scale-110' : 'bg-primary'}
+                            ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-100'}
+                        `}
+                    >
+                        {textInput.trim() ? (
+                            <SendIcon className="text-white" />
+                        ) : (
+                            <MicIcon className="w-6 h-6 text-white" />
+                        )}
                     </button>
-                    <p className="mt-3 font-semibold text-gray-700 dark:text-gray-300 h-5">
-                        {isListening ? t('listening') : isProcessing ? t('processing') : t('tap_to_speak')}
-                    </p>
-                </div>
+                </form>
+                 <p className="mt-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-300 h-5">
+                    {isListening ? t('listening') : isProcessing ? t('processing') : ''}
+                 </p>
             </div>
         </div>
     );
